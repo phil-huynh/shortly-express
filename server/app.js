@@ -94,20 +94,28 @@ app.post('/signup', (req, res) => {
   });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', (req, response) => {
   const { username, password } = req.body;
 
   models.Users.get({ username }).then(data => {
     const isUser = models.Users.compare(password, data.password, data.salt);
     if (!isUser) {
-      res.status(400).json({
+      response.status(400).json({
         status: 'fail',
         message: 'Authentication credentials do not match',
+      });
+    } else {
+      models.Sessions.create().then((res) => {
+        req.session = {};
+        req.session.sessionId = res['insertId'];
+        req.session.user = username;
+        response.cookie('shortly', res['insertId']);
+        response.status(200).json({ status: 'success', message: 'Successful login.'});
       });
     }
   });
 
-  res.sendStatus(404);
+  // res.sendStatus(404);
 });
 
 
