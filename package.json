@@ -20,6 +20,7 @@
     "ejs": "^3.1.5",
     "express": "^4.13.4",
     "express-partials": "^0.3.0",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "mysql2": "^2.2.5",
     "node-mocks-http": "^1.9.0",
