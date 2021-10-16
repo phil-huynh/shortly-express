@@ -22,18 +22,28 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(cookieParser);
 app.use(auth);
 
+const verifySession = (req, res, next) => {
+  if (req.session && req.session.userId) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+};
 
-app.get('/',
+
+
+app.get('/', verifySession,
+  (req, res) => res.render('index')
+);
+
+app.get('/login', (req, res) => res.render('login'));
+
+app.get('/create', verifySession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/create',
-  (req, res) => {
-    res.render('index');
-  });
-
-app.get('/links',
+app.get('/links', verifySession,
   (req, res, next) => {
     models.Links.getAll()
       .then(links => {
@@ -133,6 +143,17 @@ app.post('/login', (req, response) => {
 
   // response.redirect('/login');
 });
+
+app.get('/logout', (req, res, next) => {
+  models.Sessions.delete({ hash: req.session.hash }).then(() => {
+    res.cookie('shortlyid', null);
+    req.session.userId = null;
+    res.redirect('/');
+  });
+});
+
+// Add a verifySession helper function to all server routes that require login, redirect the user to a login page as needed. Require users to log in to see shortened links and create new ones. Do NOT require the user to login when using a previously shortened link.
+//  Give the user a way to log out. What will this need to do to the server session and the cookie saved to the client's browser?
 
 
 /************************************************************/
