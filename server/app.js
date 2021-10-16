@@ -1,3 +1,4 @@
+// import node modules
 const express = require('express');
 const path = require('path');
 const utils = require('./lib/hashUtils');
@@ -5,7 +6,9 @@ const partials = require('express-partials');
 const Auth = require('./middleware/auth');
 const models = require('./models');
 
+// import our own files
 const cookieParser = require('./middleware/cookieParser');
+const auth = require('./middleware/auth').createSession;
 
 const app = express();
 
@@ -17,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(cookieParser);
+app.use(auth);
 
 
 app.get('/',
@@ -82,15 +86,15 @@ app.post('/links',
 
 app.post('/signup', (req, res) => {
   const { username, password } = req.body;
-  // const newUser = new Promise((res, rej) => {
-  //   models.Users.create({ username, password });
-  // });
-  const newUser = new Promise((res, rej) => {
-    models.Users.create({ username, password }).then(() => res());
+  models.Users.get({ username }).then((data) => {
+    if (data) {
+      res.redirect('/signup');
+    }
   });
-  res.status(201).send({
-    status: 'successful',
-    message: 'User has been successfully created.',
+
+  models.Users.create({ username, password }).then((data) => {
+    models.Sessions.update({ hash: req.session.hash }, { userId: data.insertId }).then(() => {});
+    res.redirect('/');
   });
 });
 
@@ -98,24 +102,36 @@ app.post('/login', (req, response) => {
   const { username, password } = req.body;
 
   models.Users.get({ username }).then(data => {
+    if (!data) {
+      response.redirect('/login');
+      return;
+    }
     const isUser = models.Users.compare(password, data.password, data.salt);
     if (!isUser) {
+      response.redirect('/login');
       response.status(400).json({
         status: 'fail',
         message: 'Authentication credentials do not match',
       });
     } else {
-      models.Sessions.create().then((res) => {
-        req.session = {};
-        req.session.sessionId = res['insertId'];
-        req.session.user = username;
-        response.cookie('shortly', res['insertId']);
-        response.status(200).json({ status: 'success', message: 'Successful login.'});
-      });
+      models.Users.get({ username }).then(user => req.session.userId = user.id).then(() => {
+        response.redirect('/');
+      }).catch(err => response.status(400).json({
+        status: 'fail',
+        message: err.message
+      }));
+      // models.Sessions.update({ });
+      // models.Sessions.create().then((res) => {
+      //   req.session = {};
+      //   req.session.sessionId = res['insertId'];
+      //   req.session.user = username;
+      //   response.cookie('shortly', res['insertId']);
+      // });
+
     }
   });
 
-  // res.sendStatus(404);
+  // response.redirect('/login');
 });
 
 

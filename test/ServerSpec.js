@@ -39,8 +39,8 @@ describe('', function() {
     /* TODO: Update user and password if different than on your local machine            */
     /*************************************************************************************/
     db = mysql.createConnection({
-      user: 'student',
-      password: 'student',
+      user: 'root',
+      password: '',
       database: 'shortly'
     });
 
@@ -123,7 +123,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Account Creation:', function() {
+  describe('Account Creation:', function() {
 
     it('signup creates a new user record', function(done) {
       var options = {
@@ -208,7 +208,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Account Login:', function() {
+  describe('Account Login:', function() {
 
     beforeEach(function(done) {
       var options = {
@@ -277,7 +277,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Sessions Schema:', function() {
+  describe('Sessions Schema:', function() {
     it('contains a sessions table', function(done) {
       var queryString = 'SELECT * FROM sessions';
       db.query(queryString, function(err, results) {
@@ -325,7 +325,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Express Middleware', function() {
+  describe('Express Middleware', function() {
     var cookieParser = require('../server/middleware/cookieParser.js');
     var createSession = require('../server/middleware/auth.js').createSession;
 
@@ -472,6 +472,7 @@ describe('', function() {
 
         createSession(requestWithMaliciousCookie, response, function() {
           var cookie = response.cookies.shortlyid;
+          console.log(cookie);
           expect(cookie).to.exist;
           expect(cookie).to.not.equal(maliciousCookieHash);
           done();
@@ -480,7 +481,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Sessions and cookies', function() {
+  describe('Sessions and cookies', function() {
     var requestWithSession;
     var cookieJar;
 
