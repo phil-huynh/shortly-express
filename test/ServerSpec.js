@@ -648,6 +648,7 @@ describe('', function() {
       it('Responds with the short code', function(done) {
 
         requestWithSession(options, function(error, res, body) {
+
           if (error) { return done(error); }
           expect(res.body.url).to.equal('http://www.google.com/');
           expect(res.body.code).to.not.be.null;
