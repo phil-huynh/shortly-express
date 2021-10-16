@@ -86,6 +86,7 @@ app.post('/links',
         res.status(500).send(error);
       })
       .catch(link => {
+        console.log(link);
         res.status(200).send(link);
       });
   });
